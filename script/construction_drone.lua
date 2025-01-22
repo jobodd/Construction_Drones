@@ -100,6 +100,13 @@ local get_prototype = function(name)
     return prototype
 end
 
+local player_physical_position = function(player)
+    if player.controller_type == 7 then -- remote map view
+        return player.physical_position
+    else
+        return player.position
+    end
+end
 
 local get_beam_orientation = function(source_position, target_position)
     -- Angle in rads
@@ -379,7 +386,7 @@ local make_path_request = function(drone_data, player, target)
     local path_id = player.surface.request_path {
         bounding_box = prototype.collision_box,
         collision_mask = prototype.collision_mask,
-        start = player.position,
+        start = player_physical_position(player),
         goal = target.position,
         force = player.force,
         radius = target.get_radius() + 4,
@@ -426,9 +433,10 @@ end
 
 
 local make_player_drone = function(player)
+    -- make sure we spawn the drone from the player, not map view
     local position = player.surface.find_non_colliding_position(
         names.units.construction_drone,
-        player.position,
+        player_physical_position(player),
         5,
         0.5,
         false
